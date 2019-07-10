@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.segments.context.Context;
 import com.liferay.segments.context.contributor.RequestContextContributor;
 
@@ -56,12 +57,14 @@ public class WeatherRequestContextContributor
 
 		String actualWeather = "unknown";
 
+/*
 		if(context.get(KEY) == null)
 		{
+*/
 			try {
 				ObjectMapper mapper = new ObjectMapper();
 
-				String ipAddress = httpServletRequest.getRemoteAddr();
+				String ipAddress = getIpAddress(httpServletRequest);
 				_log.debug(String.format("Using ip %s", ipAddress));
 
 				HttpUriRequest request = RequestBuilder
@@ -70,14 +73,12 @@ public class WeatherRequestContextContributor
 
 				JsonNode jsonResult = mapper.readTree(getRequest(request));
 
-				Object latitude = jsonResult.get("latitude");
-				Object longitude = jsonResult.get("longitude");
+				String latitude = jsonResult.get("latitude").asText();
+				String longitude = jsonResult.get("longitude").asText();
 
 				_log.debug(String.format("Looking up weather at lat %s and lon %s", latitude, longitude));
 
-				//Call weather API
-				//TODO make this configurable... in properties
-				String apiKey = "1923b9fbe9106354dd670445a384b48d";
+				String apiKey = PortalUtil.getPortalProperties().getProperty("segment.openweathermap.apikey");
 
 				request = RequestBuilder
 						.get("http://api.openweathermap.org/data/2.5/weather?lat=" + latitude + "&lon=" + longitude + "&APPID=" + apiKey)
@@ -102,13 +103,16 @@ public class WeatherRequestContextContributor
 				}
 
 			} catch (IOException e) {
-				_log.error(e.getMessage());
+				_log.debug(e.getMessage());
 				_log.debug(e.getStackTrace());
+			} catch (Exception e) {
+				_log.debug(e.getMessage());
+				_log.debug("Global exception: " + e.toString());
 			}
 
 			_log.debug(String.format("The weather rule is running and the weather is %s", actualWeather));
 			context.put(KEY, actualWeather);
-		}
+		//}
 	}
 
 	private String getRequest(HttpUriRequest request) {
@@ -126,6 +130,19 @@ public class WeatherRequestContextContributor
 		}
 
 		return "";
+	}
+
+	private String getIpAddress (HttpServletRequest request) {
+
+		String ipAddress = request.getHeader("X-Real-Ip");
+		if (ipAddress == null || ipAddress.isEmpty()) {
+			ipAddress = request.getHeader("X-Forwarded-For");
+		}
+		if (ipAddress == null || ipAddress.isEmpty()) {
+			ipAddress = request.getRemoteAddr();
+		}
+
+		return ipAddress.replaceFirst(",.*","").trim();
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(WeatherRequestContextContributor.class);
