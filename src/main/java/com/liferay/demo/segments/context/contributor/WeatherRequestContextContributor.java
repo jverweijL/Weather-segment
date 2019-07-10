@@ -61,6 +61,7 @@ public class WeatherRequestContextContributor
 		if(context.get(KEY) == null)
 		{
 */
+		if (context.get(KEY) == null) {
 			try {
 				ObjectMapper mapper = new ObjectMapper();
 
@@ -112,7 +113,7 @@ public class WeatherRequestContextContributor
 
 			_log.debug(String.format("The weather rule is running and the weather is %s", actualWeather));
 			context.put(KEY, actualWeather);
-		//}
+		}
 	}
 
 	private String getRequest(HttpUriRequest request) {
