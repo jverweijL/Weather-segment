@@ -5,17 +5,13 @@ Make sure to configure the following property in portal-ext.properties
 segment.openweathermap.apikey=
 ```
 
-show a skirt vs. a rainjacket
-show a convertible vs. a 4x4 in the snow
-
-
-Possible values:
+The module will lookup the ipnumber from the client but if you are running on localhost (dev)
+you might want to hard-wire the ip. In this case you can set the following property in portal-ext.properties
 ```
-rainy
-snowy
-sunny
-cloudy
-windy
-misty
-unknown
+segment.weather.myip
 ```
+
+Some examples for segmenting based on weather
+
+- show a skirt when it's sunny vs. a rainjacket when it's rainy
+- show a convertible when it's sunny vs. a 4x4 when it's snowy

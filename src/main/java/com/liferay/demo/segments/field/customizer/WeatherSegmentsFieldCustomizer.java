@@ -17,30 +17,38 @@ package com.liferay.demo.segments.field.customizer;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
+import com.liferay.segments.field.Field;
 import com.liferay.segments.field.customizer.SegmentsFieldCustomizer;
 
-import java.util.List;
-import java.util.Locale;
-import java.util.ResourceBundle;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.osgi.service.component.annotations.Component;
 
 /**
  * @author Kris
  */
+
 @Component(
-	immediate = true,
-	property = {
-		"segments.field.customizer.entity.name=Context",
-		"segments.field.customizer.key=" + WeatherSegmentsFieldCustomizer.KEY,
-		"segments.field.customizer.priority:Integer=50"
-	},
-	service = SegmentsFieldCustomizer.class
+		immediate = true,
+		property = {
+				"segments.field.customizer.entity.name=Context",
+				"segments.field.customizer.key=" + WeatherSegmentsFieldCustomizer.KEY,
+				"segments.field.customizer.priority:Integer=50"
+		},
+		service = SegmentsFieldCustomizer.class
 )
 public class WeatherSegmentsFieldCustomizer implements SegmentsFieldCustomizer {
 
 	public static final String KEY = "weather";
-
+	public static final List<Field.Option> weathertypes = Arrays.asList(
+													new Field.Option("Sunny","sunny"),
+													new Field.Option("Snowy","snowy"),
+													new Field.Option("Cloudy","cloudy"),
+													new Field.Option("Windy","windy"),
+													new Field.Option("Misty","misty"),
+													new Field.Option("Rainy","rainy"));
 	@Override
 	public List<String> getFieldNames() {
 		return _fieldNames;
@@ -54,12 +62,17 @@ public class WeatherSegmentsFieldCustomizer implements SegmentsFieldCustomizer {
 	@Override
 	public String getLabel(String fieldName, Locale locale) {
 		ResourceBundle resourceBundle = ResourceBundleUtil.getBundle(
-			"content.Language", locale, getClass());
+				"content.Language", locale, getClass());
 
 		return LanguageUtil.get(resourceBundle, "weather-field-label");
 	}
 
+	@Override
+	public List<Field.Option> getOptions(Locale locale) {
+		return weathertypes;
+	}
+
 	private static final List<String> _fieldNames = ListUtil.fromArray(
-		new String[] {"weather"});
+			new String[] {"weather"});
 
 }

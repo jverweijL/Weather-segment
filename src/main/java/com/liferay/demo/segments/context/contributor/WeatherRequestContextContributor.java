@@ -42,7 +42,7 @@ import java.io.IOException;
 	immediate = true,
 	property = {
 		"request.context.contributor.key=" + WeatherRequestContextContributor.KEY,
-		"request.context.contributor.type=String"
+		"request.context.contributor.type=List"
 	},
 	service = RequestContextContributor.class
 )
@@ -50,6 +50,8 @@ public class WeatherRequestContextContributor
 	implements RequestContextContributor {
 
 	public static final String KEY = "weather";
+	String myip = PortalUtil.getPortalProperties().getProperty("segment.weather.myip",null);
+	String apiKey = PortalUtil.getPortalProperties().getProperty("segment.openweathermap.apikey",null);
 
 	@Override
 	public void contribute(
@@ -57,10 +59,6 @@ public class WeatherRequestContextContributor
 
 		String actualWeather = "unknown";
 
-/*
-		if(context.get(KEY) == null)
-		{
-*/
 		if (context.get(KEY) == null) {
 			try {
 				ObjectMapper mapper = new ObjectMapper();
@@ -79,7 +77,7 @@ public class WeatherRequestContextContributor
 
 				_log.debug(String.format("Looking up weather at lat %s and lon %s", latitude, longitude));
 
-				String apiKey = PortalUtil.getPortalProperties().getProperty("segment.openweathermap.apikey");
+				_log.debug(String.format("Using apikey %s for looking up weather. Should be set with property segment.openweathermap.apikey", apiKey));
 
 				request = RequestBuilder
 						.get("http://api.openweathermap.org/data/2.5/weather?lat=" + latitude + "&lon=" + longitude + "&APPID=" + apiKey)
@@ -134,6 +132,10 @@ public class WeatherRequestContextContributor
 	}
 
 	private String getIpAddress (HttpServletRequest request) {
+
+		if (myip != null) {
+			return myip;
+		}
 
 		String ipAddress = request.getHeader("X-Real-Ip");
 		if (ipAddress == null || ipAddress.isEmpty()) {
